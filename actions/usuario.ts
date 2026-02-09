@@ -24,3 +24,12 @@ export async function addUsuario(usuario: usuarioType) {
     return { error: `Erro ao salvar no banco de dados: ${e}` };
   }
 }
+
+export async function getAllUsuarios() {
+  try {
+    const usuarios = await prisma.usuario.findMany();
+    return usuarios;
+  } catch {
+    return [];
+  }
+}

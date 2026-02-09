@@ -132,3 +132,14 @@ npm install -D @types/bcrypt
     if (senhaCorreta) {
     // Login autorizado
     }
+
+# Listar todos os usuários
+
+    export async function getAllUsuarios() {
+    try {
+    const usuarios = await prisma.usuario.findMany();
+    return usuarios;
+    } catch {
+    return [];
+    }
+    }

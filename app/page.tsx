@@ -23,7 +23,7 @@ export default function Login() {
             <CardTitle>Realizar login</CardTitle>
             <CardDescription>Forneça os dados de login e senha</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <Label htmlFor="email">E-mail</Label>
             <Input type="email" name="email" />
             <Label htmlFor="senha">Senha</Label>

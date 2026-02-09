@@ -1,0 +1,15 @@
+import { string, z } from "zod";
+
+export const usuarioSchema = z.object({
+  nome: string()
+    .min(1, "Campo não preenchido")
+    .max(50, "Máximo de 50 caracteres atingido"),
+  sobrenome: string()
+    .min(1, "Campo não preenchido")
+    .max(50, "Máximo de 50 caracteres atingido"),
+  senha: string()
+    .min(8, "Insira no mínimo 8 caracteres")
+    .max(50, "Máximo de 50 caracteres atingido"),
+});
+
+export type usuarioType = z.infer<typeof usuarioSchema>;

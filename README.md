@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+#Anotações anteriores
 
-## Getting Started
+# Zod
 
-First, run the development server:
+Implementar schemas zed na pasta src/schemas, e dentro dela colocar separadamente os schemas seguindo o modelo do zod, esportando o modelo e o tipo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+#Instalação do prisma
+1º npm install prisma --save-dev
+2º npx prisma init
+3º Configurado a variável de ambiente com a conexão do banco
+4º Criado o modelo no schema.prisma:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- model Visao {
+  id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  nome String
+  link String
+  cpf String @unique  
+   createdAt DateTime @default(now())  
+   updatedAt DateTime @updatedAt  
+   }
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+5º Execução dos comandos no banco:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- npx prisma migrate dev
+  Cria e altera as tabelas no banco de dados (Postgres). Ele gera os arquivos .sql.
 
-## Learn More
+- Ajustar o generetor no schema.prisma para:
+  generator client {
+  provider = "prisma-client-js"
+  }
 
-To learn more about Next.js, take a look at the following resources:
+- npx prisma generate
+  Cria e atualiza as tipagens no código (TypeScript). Ele lê o schema e cria o "auto-completar"
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+6º Criar o arquivo prisma.ts na pasta lib para criação de uma conexão global
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Implementação dos schemas na pasta schemas
 
-## Deploy on Vercel
+    import { string, z } from "zod";
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    export const usuarioSchema = z.object({
+    nome: string()
+    .min(1, "Campo não preenchido")
+    .max(50, "Máximo de 50 caracteres atingido"),
+    sobrenome: string()
+    .min(1, "Campo não preenchido")
+    .max(50, "Máximo de 50 caracteres atingido"),
+    senha: string()
+    .min(8, "Insira no mínimo 8 caracteres")
+    .max(50, "Máximo de 50 caracteres atingido"),
+    });
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    export type usuarioType = z.infer<typeof usuarioSchema>;
+
+# Implementação das funções do prisma
+
+1º Criar o arquivo app/actions/visao.ts. Lá vão ficar as funções do prisma que vão ser executadas apenas do lado do servidor:
+
+- "use server";
+
+  import prisma from "@/lib/prisma";
+  import { visaoSchema, visao } from "@/schemas/visao";
+
+  export async function criarVisao(dados: visao) {
+  const validacaoVisao = visaoSchema.safeParse(dados);
+
+  if (!validacaoVisao.success) {
+  return { error: "Dados inválidos no servidor." };
+  }
+  try {
+  const novaVisao = await prisma.visao.create({
+  data: validacaoVisao.data,
+  });
+  return { sucess: true, nome: novaVisao.nome };
+  } catch (error) {
+  console.error("Erro ao salvar:", error);
+  return { error: "Erro ao salvar no banco de dados." };
+  }
+  }
+
+# Implementação no frontend usando toast:
+
+    async function cadastrarUsuario(usuario: usuarioType) {
+    const toastId = toast.loading("Cadastrando usuário...");
+    const novoUsuario = await addUsuario(usuario);
+
+    if (novoUsuario.sucess) {
+      toast.success(`Usuário "${novoUsuario.nome}" cadastrado com sucesso`, {
+        id: toastId,
+      });
+      form.reset();
+    } else {
+      toast.error(`Erro: ${novoUsuario.error}`, {
+        id: toastId,
+      });
+    }
+    }
+
+###### OBS: instalar sonner no projeto e adicionar <Toaster position="top-right" richColors /> no layout.tsx
+
+###### OBS: Lembrar de usar "use server" nas actions e "use client" quando há necessidade de javascript no navegador do cliente (uso de hooks)
+
+# Bibliotecas de criptografia
+
+npm install bcrypt
+npm install -D @types/bcrypt
+
+# Criptografia de senhas
+
+    import bcrypt from "bcrypt"
+
+    const { nome, sobrenome, senha } = validacaoUsuario.data;
+
+    try {
+    const senhaCriptografada = await bcrypt.hash(senha, 10);
+
+        const novoUsuario = await prisma.usuario.create({
+          data: { nome: nome, sobrenome: sobrenome, senha: senhaCriptografada },
+        });
+        return { sucess: true, nome: novoUsuario.nome };
+
+    } catch (e) {
+        return { error: `Erro ao salvar no banco de dados: ${e}` };
+    }
+
+# Descriptografar senha para login
+
+    const usuarioNoBanco = await prisma.usuario.findUnique({ where: { email } });
+
+    const senhaCorreta = await bcrypt.compare(senhaDigitada, usuarioNoBanco.senha);
+
+    if (senhaCorreta) {
+    // Login autorizado
+    }

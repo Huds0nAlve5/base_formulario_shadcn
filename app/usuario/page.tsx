@@ -1,6 +1,8 @@
 "use client";
 
+import { addUsuario } from "@/actions/usuario";
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -18,53 +20,60 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { usuarioSchema, usuarioType } from "@/schemas/usuario";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { visaoSchema, visao } from "@/schemas/visao";
-import { criarVisao } from "../../actions/visao";
+import { toast } from "sonner";
 
-export default function Home() {
-  const form = useForm<visao>({
-    resolver: zodResolver(visaoSchema),
-    // mode: "onChange",
+export default function Usuario() {
+  const form = useForm<usuarioType>({
+    resolver: zodResolver(usuarioSchema),
+    //mode: "onChange",
     defaultValues: {
       nome: "",
-      link: "",
-      cpf: "",
+      sobrenome: "",
+      senha: "",
     },
   });
 
-  async function onSubmit(dados: visao) {
-    const resultado = await criarVisao(dados);
+  async function cadastrarUsuario(usuario: usuarioType) {
+    const toastId = toast.loading("Cadastrando usuário...");
+    const novoUsuario = await addUsuario(usuario);
 
-    if (resultado.sucess) {
-      alert(`Visão ${resultado.nome} cadastrada com sucesso`);
+    if (novoUsuario.sucess) {
+      toast.success(`Usuário "${novoUsuario.nome}" cadastrado com sucesso`, {
+        id: toastId,
+      });
+      form.reset();
     } else {
-      alert(resultado.error);
+      toast.error(`Erro: ${novoUsuario.error}`, {
+        id: toastId,
+      });
     }
   }
   return (
     <>
-      <div className="bg-neutral-900 h-screen flex justify-center items-center">
+      <div className="flex justify-center items-center bg-neutral-900 h-screen">
         <Card className="w-100">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(cadastrarUsuario)}
+              className="space-y-4 w-full"
+            >
               <CardHeader>
-                <CardTitle>Cadastro de Visão</CardTitle>
-                <CardDescription>
-                  Insira os dados relacionado ao BI
-                </CardDescription>
+                <CardTitle>Cadastro de usuário</CardTitle>
+                <CardDescription>Insira nome e sobrenome</CardDescription>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 <FormField
                   control={form.control}
                   name="nome"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome da visão</FormLabel>
+                      <FormLabel>Nome</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}></Input>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -73,12 +82,12 @@ export default function Home() {
 
                 <FormField
                   control={form.control}
-                  name="link"
+                  name="sobrenome"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Link da visão</FormLabel>
+                      <FormLabel>Sobrenome</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}></Input>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -87,21 +96,30 @@ export default function Home() {
 
                 <FormField
                   control={form.control}
-                  name="cpf"
+                  name="senha"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF</FormLabel>
+                      <FormLabel>Senha</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Insira o CPF"></Input>
+                        <Input {...field} type="password"></Input>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </CardContent>
-              <CardFooter>
+
+              <CardFooter className="flex-col space-y-2">
                 <Button className="w-full cursor-pointer" type="submit">
                   Cadastrar
+                </Button>
+                <Button
+                  type="button"
+                  variant={"outline"}
+                  className="w-full cursor-pointer"
+                  onClick={() => form.reset()}
+                >
+                  Limpar
                 </Button>
               </CardFooter>
             </form>

@@ -1,7 +1,8 @@
 "use client";
 
 import { addUsuario } from "@/actions/usuario";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { IoArrowBack } from "react-icons/io5";
 
 import {
   Card,
@@ -20,14 +21,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { usuarioSchema, usuarioType } from "@/schemas/usuario";
+import { usuarioFormSchema, usuarioFormType } from "@/schemas/usuario";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function Usuario() {
-  const form = useForm<usuarioType>({
-    resolver: zodResolver(usuarioSchema),
+  const form = useForm<usuarioFormType>({
+    resolver: zodResolver(usuarioFormSchema),
     //mode: "onChange",
     defaultValues: {
       nome: "",
@@ -36,7 +38,7 @@ export default function Usuario() {
     },
   });
 
-  async function cadastrarUsuario(usuario: usuarioType) {
+  async function cadastrarUsuario(usuario: usuarioFormType) {
     const toastId = toast.loading("Cadastrando usuário...");
     const novoUsuario = await addUsuario(usuario);
 
@@ -53,7 +55,7 @@ export default function Usuario() {
   }
   return (
     <>
-      <div className="flex justify-center items-center bg-neutral-900 h-screen">
+      <div className="flex justify-center items-center h-screen">
         <Card className="w-100">
           <Form {...form}>
             <form
@@ -61,8 +63,20 @@ export default function Usuario() {
               className="space-y-4 w-full"
             >
               <CardHeader>
-                <CardTitle>Cadastro de usuário</CardTitle>
-                <CardDescription>Insira nome e sobrenome</CardDescription>
+                <Link
+                  href={"/usuarios"}
+                  className={buttonVariants({ variant: "link" })}
+                >
+                  <span className="w-full flex gap-x-2 justify-end items-center">
+                    <IoArrowBack /> Voltar para a listagem
+                  </span>
+                </Link>
+                <CardTitle className="text-[20px] text-center">
+                  Cadastro de usuário
+                </CardTitle>
+                <CardDescription className="text-center">
+                  Insira nome, sobrenome e sua senha
+                </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-3">

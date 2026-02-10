@@ -1,11 +1,15 @@
 "use server";
 
-import { usuarioSchema, usuarioType } from "@/schemas/usuario";
+import {
+  UsuarioBancoType,
+  usuarioFormSchema,
+  usuarioFormType,
+} from "@/schemas/usuario";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
-export async function addUsuario(usuario: usuarioType) {
-  const validacaoUsuario = usuarioSchema.safeParse(usuario);
+export async function addUsuario(usuario: usuarioFormType) {
+  const validacaoUsuario = usuarioFormSchema.safeParse(usuario);
 
   if (!validacaoUsuario.success) {
     return { error: "Dados inválidos no servidor." };
@@ -25,9 +29,11 @@ export async function addUsuario(usuario: usuarioType) {
   }
 }
 
-export async function getAllUsuarios() {
+export async function getAllUsuarios(): Promise<UsuarioBancoType[]> {
   try {
-    const usuarios = await prisma.usuario.findMany();
+    const usuarios: UsuarioBancoType[] = await prisma.usuario.findMany({
+      orderBy: { nome: "asc" },
+    });
     return usuarios;
   } catch {
     return [];

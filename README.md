@@ -143,3 +143,8 @@ npm install -D @types/bcrypt
     return [];
     }
     }
+
+# Datatable
+
+O datatable foi montado no components, e o columns na mesma pasta do page
+O datatable foi todo montado seguindo a documentação do shadcn

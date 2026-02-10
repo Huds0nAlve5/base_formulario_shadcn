@@ -56,7 +56,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex justify-center items-center">
-      <div className="bg-white px-10 rounded-2xl w-80/100">
+      <div className="bg-white px-10 rounded-2xl w-60/100">
         <div className="flex items-center justify-between py-4">
           <Input
             placeholder="Filtrar usuário..."

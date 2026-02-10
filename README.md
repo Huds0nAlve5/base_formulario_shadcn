@@ -148,3 +148,7 @@ npm install -D @types/bcrypt
 
 O datatable foi montado no components, e o columns na mesma pasta do page
 O datatable foi todo montado seguindo a documentação do shadcn
+
+## OBS: lembrar de gerar o npx prisma generate para validações do TS no projeto novo
+
+## Delete feito com revalidatePath("/usuarios"); para limpar o cache com os dados e recarregar a página

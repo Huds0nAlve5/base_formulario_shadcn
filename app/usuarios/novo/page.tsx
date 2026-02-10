@@ -67,7 +67,7 @@ export default function Usuario() {
                   href={"/usuarios"}
                   className={buttonVariants({ variant: "link" })}
                 >
-                  <span className="w-full flex gap-x-2 justify-end items-center">
+                  <span className="w-full flex gap-x-1 hover:gap-x-2.5 duration-500 justify-end items-center">
                     <IoArrowBack /> Voltar para a listagem
                   </span>
                 </Link>

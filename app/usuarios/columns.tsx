@@ -15,6 +15,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UsuarioBancoType } from "@/schemas/usuario";
+import { toast } from "sonner";
+import { delUsuario } from "@/actions/usuario";
+
+async function deletarUsuario(id: string) {
+  const toastId = toast.loading("Excluindo usuário...");
+  const taskDelUsuario = await delUsuario(id);
+
+  if (taskDelUsuario.sucess) {
+    toast.success(`${taskDelUsuario.message}`, {
+      id: toastId,
+    });
+  } else {
+    toast.error(`Erro: ${taskDelUsuario.error}`, {
+      id: toastId,
+    });
+  }
+}
 
 export const columns: ColumnDef<UsuarioBancoType>[] = [
   {
@@ -85,7 +102,12 @@ export const columns: ColumnDef<UsuarioBancoType>[] = [
               <MdEdit className="text-black" />
               Alterar
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-destructive! hover:text-white! cursor-pointer duration-400">
+            <DropdownMenuItem
+              className="hover:bg-destructive! hover:text-white! cursor-pointer duration-400"
+              onClick={() => {
+                deletarUsuario(usuario.id);
+              }}
+            >
               <MdDelete className="hover:text-white" />
               Excluir
             </DropdownMenuItem>

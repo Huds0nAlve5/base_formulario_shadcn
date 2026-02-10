@@ -152,3 +152,53 @@ O datatable foi todo montado seguindo a documentação do shadcn
 ## OBS: lembrar de gerar o npx prisma generate para validações do TS no projeto novo
 
 ## Delete feito com revalidatePath("/usuarios"); para limpar o cache com os dados e recarregar a página
+
+# Para acessar as props de uma página de alterar, por exemplo, /usuarios/[id]/editar:
+
+    interface PageProps {
+      params: Promise<{ id: string }>;
+    }
+
+    export default function editarUsuario({ params }: PageProps) {
+        const { id } = use(params);
+
+## Passando mais de 1 parâmetro para ação ao submit
+
+    onSubmit={form.handleSubmit((usuario: usuarioFormType) =>
+    alterarUsuario(id, usuario),
+
+## Função de alteração usando useEffect, para funções server side dentro do client side
+
+    useEffect(() => {
+    async function usuarioASerAlterado(id: string) {
+      const toastId = toast.loading("Carregando dados do usuário...");
+      const validaUsuario = await getUniqueUsuario(id);
+
+      if (validaUsuario.sucess) {
+        form.reset({
+          nome: validaUsuario.usuario?.nome,
+          sobrenome: validaUsuario.usuario?.sobrenome,
+          senha: "",
+        });
+        toast.dismiss(toastId);
+      } else {
+        toast.error(`Erro ao alterar usuário: ${validaUsuario.error}`, {
+          id: toastId,
+        });
+      }
+    }
+
+    usuarioASerAlterado(id);
+
+}, [form, id]);
+
+## Crud implementado com sucesso.
+
+## Lembretes:
+
+- As funções server side ficam na pasta actions, na raiz do projeto
+- Os schemas do projeto ficam na pasta schemas
+- As funções em action devem retornar um error: string, sucess: boolean e message: string
+- A função deve ser chamada em uma função assíncrona no front-end, com uma validação if(funcao.sucess), e aqui tendo toasts e redirects
+- No formulário, o form processa no onHandleSubmit, a função assíncrona declarada, que chama a action
+- useEffect vai servir para funções assíncronas que precisarão ser chamados no front-end, como funções que são executadas ao renderizar a página, como gets

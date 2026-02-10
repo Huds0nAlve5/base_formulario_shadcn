@@ -1,6 +1,6 @@
 "use client";
 
-import { addUsuario } from "@/actions/usuario";
+import { alterarUsuario, getUniqueUsuario } from "@/actions/usuario";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { IoArrowBack } from "react-icons/io5";
 
@@ -27,8 +27,15 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { redirect } from "next/navigation";
+import { use, useEffect } from "react";
 
-export default function cadastrarUsuario() {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function editarUsuario({ params }: PageProps) {
+  const { id } = use(params);
+
   const form = useForm<usuarioFormType>({
     resolver: zodResolver(usuarioFormSchema),
     //mode: "onChange",
@@ -39,29 +46,56 @@ export default function cadastrarUsuario() {
     },
   });
 
-  async function cadastrarUsuario(usuario: usuarioFormType) {
-    const toastId = toast.loading("Cadastrando usuário...");
-    const novoUsuario = await addUsuario(usuario);
+  async function funcaoAlteracaoUsuario(id: string, usuario: usuarioFormType) {
+    const toastId = toast.loading("Carregando dados do usuário...");
+    const validaUsuarioAlterado = await alterarUsuario(id, usuario);
 
-    if (novoUsuario.sucess) {
-      toast.success(`Usuário "${novoUsuario.nome}" cadastrado com sucesso`, {
-        id: toastId,
-      });
-      form.reset();
+    if (validaUsuarioAlterado.sucess) {
+      toast.success(
+        `Usuário "${validaUsuarioAlterado.usuario?.nome}" alterado com sucesso`,
+        {
+          id: toastId,
+        },
+      );
       redirect("/usuarios");
     } else {
-      toast.error(`Erro: ${novoUsuario.error}`, {
+      toast.error(`Erro ao alterar usuário: ${validaUsuarioAlterado.error}`, {
         id: toastId,
       });
     }
   }
+
+  useEffect(() => {
+    async function usuarioASerAlterado(id: string) {
+      const toastId = toast.loading("Carregando dados do usuário...");
+      const validaUsuario = await getUniqueUsuario(id);
+
+      if (validaUsuario.sucess) {
+        form.reset({
+          nome: validaUsuario.usuario?.nome,
+          sobrenome: validaUsuario.usuario?.sobrenome,
+          senha: "",
+        });
+        toast.dismiss(toastId);
+      } else {
+        toast.error(`Erro ao alterar usuário: ${validaUsuario.error}`, {
+          id: toastId,
+        });
+      }
+    }
+
+    usuarioASerAlterado(id);
+  }, [id, form]);
+
   return (
     <>
       <div className="flex justify-center items-center h-screen">
         <Card className="w-100">
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(cadastrarUsuario)}
+              onSubmit={form.handleSubmit((usuario: usuarioFormType) =>
+                funcaoAlteracaoUsuario(id, usuario),
+              )} //passando mais de 1 parâmetro para ação ao submit
               className="space-y-4 w-full"
             >
               <CardHeader>
@@ -127,13 +161,15 @@ export default function cadastrarUsuario() {
 
               <CardFooter className="flex-col space-y-2">
                 <Button className="w-full cursor-pointer" type="submit">
-                  Cadastrar
+                  Salvar
                 </Button>
                 <Button
                   type="button"
                   variant={"outline"}
                   className="w-full cursor-pointer"
-                  onClick={() => form.reset()}
+                  onClick={() =>
+                    form.reset({ nome: "", sobrenome: "", senha: "" })
+                  }
                 >
                   Limpar
                 </Button>

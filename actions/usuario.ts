@@ -8,12 +8,14 @@ import {
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 type objetoDeRetorno = {
   sucess?: boolean;
   error?: string;
   message?: string;
   nome?: string;
+  usuario?: UsuarioBancoType;
 };
 
 export async function addUsuario(
@@ -70,5 +72,64 @@ export async function delUsuario(id: string): Promise<objetoDeRetorno> {
     };
   } catch (e) {
     return { error: `Erro na exclusão do usuário "${verificacaoPessoa.nome}"` };
+  }
+}
+
+export async function getUniqueUsuario(id: string): Promise<objetoDeRetorno> {
+  const verificacaoPessoa = await prisma.usuario.findUnique({
+    where: { id: id },
+  });
+
+  if (!verificacaoPessoa) {
+    return {
+      error: "Erro na exclusão! Usuário não encontrado no banco de dados",
+    };
+  }
+
+  try {
+    await prisma.usuario.findUnique({ where: { id: id } });
+    return {
+      sucess: true,
+      usuario: verificacaoPessoa,
+    };
+  } catch (e) {
+    return {
+      error: `Erro ao buscar dados do usuário "${verificacaoPessoa.nome}"`,
+    };
+  }
+}
+
+export async function alterarUsuario(
+  id: string,
+  usuarioAtualizado: usuarioFormType,
+): Promise<objetoDeRetorno> {
+  const senhaCriptografada = await bcrypt.hash(usuarioAtualizado.senha, 10);
+  const verificacaoPessoa = await prisma.usuario.findUnique({
+    where: { id: id },
+  });
+
+  if (!verificacaoPessoa) {
+    return {
+      error: "Erro na exclusão! Usuário não encontrado no banco de dados",
+    };
+  }
+
+  try {
+    await prisma.usuario.update({
+      where: { id: id },
+      data: {
+        nome: usuarioAtualizado.nome,
+        sobrenome: usuarioAtualizado.sobrenome,
+        senha: senhaCriptografada,
+      },
+    });
+    return {
+      sucess: true,
+      usuario: verificacaoPessoa,
+    };
+  } catch (e) {
+    return {
+      error: `Erro ao buscar dados do usuário "${verificacaoPessoa.nome}"`,
+    };
   }
 }

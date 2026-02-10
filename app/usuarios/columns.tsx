@@ -17,6 +17,7 @@ import {
 import { UsuarioBancoType } from "@/schemas/usuario";
 import { toast } from "sonner";
 import { delUsuario } from "@/actions/usuario";
+import { redirect } from "next/navigation";
 
 async function deletarUsuario(id: string) {
   const toastId = toast.loading("Excluindo usuário...");
@@ -98,7 +99,10 @@ export const columns: ColumnDef<UsuarioBancoType>[] = [
               Copiar ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => redirect(`/usuarios/${usuario.id}/editar`)}
+            >
               <MdEdit className="text-black" />
               Alterar
             </DropdownMenuItem>

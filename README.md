@@ -202,3 +202,19 @@ O datatable foi todo montado seguindo a documentação do shadcn
 - A função deve ser chamada em uma função assíncrona no front-end, com uma validação if(funcao.sucess), e aqui tendo toasts e redirects
 - No formulário, o form processa no onHandleSubmit, a função assíncrona declarada, que chama a action
 - useEffect vai servir para funções assíncronas que precisarão ser chamados no front-end, como funções que são executadas ao renderizar a página, como gets
+
+## Nomenclatura padrão:
+
+export async function createUsuario(data: usuarioFormType) { ... }
+
+async function onSubmit(values: usuarioFormType) {
+const toastId = toast.loading("Enviando...");
+const res = await createUsuario(values);
+...
+}
+
+<form onSubmit={form.handleSubmit(onSubmit)}>
+
+# No action, nomes como create, delete, update, select
+
+# No front-end, apenas a função padrão do formulário, como onSubmit

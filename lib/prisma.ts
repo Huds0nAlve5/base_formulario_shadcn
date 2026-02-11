@@ -10,12 +10,12 @@ const prismaClientSingleton = () => {
   return new PrismaClient({ adapter });
 };
 
-// 2. Definimos um tipo para o objeto global (ajuda o TypeScript)
+// 2. Definimos um tipo para o objeto global
 declare global {
   var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
-// 3. A mágica: se já existir no 'global', usa o que tem.
+// 3. se já existir no 'global', usa o que tem.
 // Se não (como na primeira vez), cria um novo.
 const prisma = globalThis.prisma ?? prismaClientSingleton();
 

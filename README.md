@@ -1,23 +1,37 @@
-#Anotações anteriores
+# instalação do shadcn
+
+comando do npx shadcn add (algo assim, exemplo para instalar componente)
 
 # Zod
 
 Implementar schemas zed na pasta src/schemas, e dentro dela colocar separadamente os schemas seguindo o modelo do zod, esportando o modelo e o tipo
 
+npm install zod
+
 #Instalação do prisma
 1º npm install prisma --save-dev
+npm install @prisma/client
+npm install @prisma/adapter-pg
 2º npx prisma init
 3º Configurado a variável de ambiente com a conexão do banco
-4º Criado o modelo no schema.prisma:
+4º Criado o modelo no schema.prisma (IMPORTANTE O GENERATOR SER ASSIM!! SE NAO DA ERRO NA HORA DE IMPORTAR @prisma/client):
 
-- model Visao {
-  id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  nome String
-  link String
-  cpf String @unique  
-   createdAt DateTime @default(now())  
-   updatedAt DateTime @updatedAt  
-   }
+- generator client {
+  provider = "prisma-client-js"
+  }
+
+  datasource db {
+  provider = "postgresql"
+  }
+
+model Visao {
+id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+nome String
+link String
+cpf String @unique  
+ createdAt DateTime @default(now())  
+ updatedAt DateTime @updatedAt  
+ }
 
 5º Execução dos comandos no banco:
 
@@ -33,6 +47,32 @@ Implementar schemas zed na pasta src/schemas, e dentro dela colocar separadament
   Cria e atualiza as tipagens no código (TypeScript). Ele lê o schema e cria o "auto-completar"
 
 6º Criar o arquivo prisma.ts na pasta lib para criação de uma conexão global
+
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+// 1. Criamos uma função ou variável para guardar o cliente
+const adapter = new PrismaPg({
+connectionString: process.env.DATABASE_URL!,
+});
+
+const prismaClientSingleton = () => {
+return new PrismaClient({ adapter });
+};
+
+// 2. Definimos um tipo para o objeto global
+declare global {
+var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
+}
+
+// 3. se já existir no 'global', usa o que tem.
+// Se não (como na primeira vez), cria um novo.
+const prisma = globalThis.prisma ?? prismaClientSingleton();
+
+export default prisma;
+
+// 4. Em desenvolvimento, salva no global para não criar outro no recarregamento
+if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
 
 # Implementação dos schemas na pasta schemas
 
